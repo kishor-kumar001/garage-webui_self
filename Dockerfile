@@ -1,7 +1,8 @@
 FROM node:20-slim AS frontend
 WORKDIR /app
 
-RUN npm install -g corepack@latest && corepack use pnpm@latest
+# pnpm 11 blocks the swc/esbuild install scripts; the lockfile (v9) works with pnpm 9.
+RUN npm install -g pnpm@9
 
 COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
