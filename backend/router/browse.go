@@ -331,6 +331,10 @@ func getS3Client(bucket string) (*s3.Client, error) {
 		return nil, fmt.Errorf("cannot get credentials for bucket %s: %w", bucket, err)
 	}
 
+	return newS3Client(creds), nil
+}
+
+func newS3Client(creds aws.CredentialsProvider) *s3.Client {
 	// Determine endpoint and whether to disable HTTPS
 	endpoint := utils.Garage.GetS3Endpoint()
 	disableHTTPS := !strings.HasPrefix(endpoint, "https://")
@@ -342,7 +346,7 @@ func getS3Client(bucket string) (*s3.Client, error) {
 	}
 
 	// Build S3 client with custom endpoint resolver for proper signing
-	client := s3.NewFromConfig(awsConfig, func(o *s3.Options) {
+	return s3.NewFromConfig(awsConfig, func(o *s3.Options) {
 		o.UsePathStyle = true
 		o.EndpointOptions.DisableHTTPS = disableHTTPS
 		o.EndpointResolver = s3.EndpointResolverFunc(func(region string, opts s3.EndpointResolverOptions) (aws.Endpoint, error) {
@@ -352,6 +356,4 @@ func getS3Client(bucket string) (*s3.Client, error) {
 			}, nil
 		})
 	})
-
-	return client, nil
 }
